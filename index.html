@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>WebGIS Kelvin Sibarani</title>
 
   <link
@@ -11,6 +12,14 @@
   >
 
   <style>
+    :root {
+      --navy: #123448;
+      --teal: #087f8c;
+      --border: #dce5eb;
+      --text: #203747;
+      --muted: #627887;
+    }
+
     * {
       box-sizing: border-box;
     }
@@ -19,163 +28,1083 @@
       height: 100%;
       margin: 0;
       font-family: Arial, sans-serif;
+      color: var(--text);
     }
 
     body {
       display: flex;
       flex-direction: column;
+      background: #f4f7fa;
+    }
+
+    button, select, input {
+      font: inherit;
+    }
+
+    button, select, .upload-button {
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid #38bdf8;
+      outline-offset: 3px;
     }
 
     header {
-      padding: 14px 18px;
-      background: #164e63;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      padding: 16px 22px;
+      background: linear-gradient(120deg, #123448, #146779);
       color: white;
     }
 
-    h1 {
-      margin: 0 0 8px;
+    header h1 {
+      margin: 0;
       font-size: 22px;
     }
 
-    p {
-      margin: 8px 0;
-      font-size: 14px;
+    header p {
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: #d0e8ee;
+    }
+
+    .badge {
+      padding: 8px 12px;
+      border: 1px solid #ffffff55;
+      border-radius: 20px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .workspace {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      position: relative;
+    }
+
+    aside {
+      width: 310px;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: 20px;
+      background: white;
+      border-right: 1px solid var(--border);
+    }
+
+    .section {
+      margin-bottom: 22px;
+    }
+
+    .section h2 {
+      margin: 0 0 12px;
+      font-size: 15px;
+    }
+
+    .help {
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    select, .primary-button, .upload-button {
+      display: block;
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+    }
+
+    select {
+      background: #f8fafc;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .primary-button {
+      background: var(--teal);
+      color: white;
+      border-color: var(--teal);
+    }
+
+    .upload-button {
+      text-align: center;
+      background: #edf8fa;
+      color: #086574;
+      font-weight: bold;
+    }
+
+    #file {
+      width: 100%;
+      margin-top: 12px;
+      font-size: 12px;
+    }
+
+    .layer-card {
+      margin-bottom: 10px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+
+    .layer-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .layer-top label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      font-weight: bold;
+      overflow-wrap: anywhere;
+    }
+
+    .focus-button {
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: white;
+      font-size: 11px;
+      color: var(--text);
+    }
+
+    .opacity-label {
+      display: flex;
+      justify-content: space-between;
+      margin: 12px 0 5px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--teal);
+    }
+
+    input[type="checkbox"] {
+      accent-color: var(--teal);
+    }
+
+    #status {
+      padding: 12px;
+      border-radius: 9px;
+      background: #eef5f8;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-line;
+      overflow-wrap: anywhere;
+    }
+
+    #status.error {
+      background: #fff1f1;
+      color: #a12323;
+    }
+
+    .credit {
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      line-height: 1.6;
+      color: var(--muted);
     }
 
     #map {
       flex: 1;
+      min-width: 0;
       min-height: 300px;
+      background: #dce8ed;
+    }
+
+    footer {
+      padding: 7px 15px;
+      background: white;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .legend {
+      background: white;
+      padding: 12px 14px;
+      border-radius: 10px;
+      box-shadow: 0 4px 18px #00000026;
+      max-width: 310px;
+      max-height: 45vh;
+      overflow-y: auto;
+      color: var(--text);
+    }
+
+    .legend summary {
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 11px;
+    }
+
+    .swatch {
+      width: 22px;
+      height: 13px;
+      flex-shrink: 0;
+      border: 1px solid #78909c;
+    }
+
+    .legend p {
+      max-width: 270px;
+      margin: 12px 0 0;
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--muted);
     }
 
     .leaflet-popup-content {
-      max-height: 250px;
-      overflow: auto;
+      max-height: 270px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+
+    .popup-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #087f8c;
+    }
+
+    #panel-toggle {
+      display: none;
+      padding: 8px 11px;
+      background: #ffffff18;
+      border: 1px solid #ffffff55;
+      border-radius: 7px;
+      color: white;
+    }
+
+    @media (max-width: 760px) {
+      header {
+        padding: 12px 14px;
+      }
+
+      header h1 {
+        font-size: 17px;
+      }
+
+      header p {
+        font-size: 11px;
+      }
+
+      .badge {
+        display: none;
+      }
+
+      #panel-toggle {
+        display: block;
+      }
+
+      aside {
+        display: none;
+        position: absolute;
+        inset: 0 auto 0 0;
+        z-index: 1100;
+        width: min(310px, 88vw);
+        box-shadow: 5px 0 20px #00000025;
+      }
+
+      aside.open {
+        display: block;
+      }
+
+      .legend {
+        max-width: 260px;
+        padding: 10px;
+      }
+
+      footer {
+        font-size: 10px;
+      }
     }
   </style>
 </head>
 
 <body>
   <header>
-    <h1>WebGIS Kelvin Sibarani</h1>
+    <div>
+      <h1>WebGIS Kelvin Sibarani</h1>
+      <p>Eksplorasi peta penelitian · Kelompok 16</p>
+    </div>
 
-    <label for="file">Buka data peta GeoJSON:</label>
-    <input
-      id="file"
-      type="file"
-      accept=".geojson,.json"
+    <span class="badge">Peta interaktif</span>
+
+    <button
+      id="panel-toggle"
+      type="button"
+      aria-controls="sidebar"
+      aria-expanded="false"
     >
-
-    <p id="status">
-      Pilih berkas GeoJSON untuk menampilkan data petamu.
-    </p>
+      Pengaturan
+    </button>
   </header>
 
-  <div id="map"></div>
+  <main class="workspace">
+    <aside id="sidebar" aria-label="Pengaturan peta">
+      <section class="section">
+        <h2>Peta dasar</h2>
+
+        <select id="basemap-select" aria-label="Pilih peta dasar">
+          <option value="satellite">Citra satelit Esri</option>
+          <option value="osm">OpenStreetMap</option>
+        </select>
+
+        <button id="zoom-all" class="primary-button" type="button">
+          Lihat seluruh wilayah
+        </button>
+      </section>
+
+      <section class="section">
+        <h2>Layer penelitian · <span id="layer-count">0</span></h2>
+        <div id="layer-list"></div>
+
+        <p class="help">
+          Centang untuk menampilkan layer. Atur opasitas untuk melihat
+          peta dasar di bawahnya.
+        </p>
+      </section>
+
+      <section class="section">
+        <h2>Tambahkan data</h2>
+
+        <label class="upload-button" for="file">
+          Pilih file peta
+        </label>
+
+        <input
+          id="file"
+          type="file"
+          accept=".geojson,.json"
+          multiple
+        >
+
+        <p class="help">
+          Mendukung GeoJSON dan Esri JSON dalam WGS 84.
+          Kamu dapat memilih beberapa file sekaligus.
+          File pilihan ini hanya ditampilkan di browser.
+        </p>
+      </section>
+
+      <p id="status" role="status" aria-live="polite">
+        Sedang memuat data penelitian...
+      </p>
+
+      <div class="credit">
+        WebGIS Kelvin Sibarani<br>
+        Peta dasar: Esri / OpenStreetMap<br>
+        Koordinat data: WGS 84 (EPSG:4326)
+      </div>
+    </aside>
+
+    <div id="map" aria-label="Peta penelitian"></div>
+  </main>
+
+  <footer id="coordinates">
+    Klik objek peta untuk melihat atributnya.
+  </footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/@terraformer/arcgis"></script>
 
   <script>
-    const map = L.map("map").setView([-5.4, 105.27], 12);
+    "use strict";
 
-    const basemap = L.tileLayer(
-      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    // Nama file harus sama persis dengan file di folder/GitHub.
+    const publicFiles = [
       {
-        maxZoom: 19,
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">' +
-          "OpenStreetMap</a> contributors"
+        url: "./disinibawah.json",
+        key: "disinibawah.json",
+        title: "Wilayah bawah"
+      },
+      {
+        url: "./atas.json",
+        key: "atas.json",
+        title: "Wilayah atas"
       }
-    ).addTo(map);
+    ];
 
-    const controls = L.control.layers(
-      { "OpenStreetMap": basemap },
-      {},
-      { collapsed: false }
-    ).addTo(map);
+    const colors = {
+      1: "#c7eef2",
+      2: "#a0cee5",
+      3: "#69a8dc",
+      4: "#3687cf",
+      5: "#245bb7",
+      6: "#283a99",
+      7: "#101478"
+    };
+
+    // Rentang berikut khusus legenda wilayah bawah.
+    // Pastikan sesuai dengan hasil Reclassify datamu.
+    const classLabels = {
+      1: "6,796735287 – 10,85005275",
+      2: "10,85005276 – 13,41715381",
+      3: "13,41715382 – 15,57892312",
+      4: "15,57892313 – 17,74069244",
+      5: "17,74069245 – 19,90246175",
+      6: "19,90246176 – 21,72645461",
+      7: "21,72645462 – 24,0233345"
+    };
+
+    const statusEl = document.getElementById("status");
+    const layerListEl = document.getElementById("layer-list");
+    const layerCountEl = document.getElementById("layer-count");
+    const sidebar = document.getElementById("sidebar");
+    const panelToggle = document.getElementById("panel-toggle");
+    const fileInput = document.getElementById("file");
+
+    const records = new Map();
+    let loadQueue = Promise.resolve();
+
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.classList.toggle("error", isError);
+    }
+
+    if (!window.L) {
+      setStatus(
+        "Pustaka peta gagal dimuat. Periksa internet, lalu muat ulang halaman.",
+        true
+      );
+      throw new Error("Leaflet gagal dimuat.");
+    }
+
+    const map = L.map("map", {
+      preferCanvas: true
+    }).setView([-5.55, 105.26], 13);
+
+    const basemaps = {
+      satellite: L.tileLayer(
+        "https://services.arcgisonline.com/ArcGIS/rest/services/" +
+        "World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          maxZoom: 19,
+          attribution:
+            "Tiles &copy; Esri &mdash; Source: Esri, Maxar, " +
+            "Earthstar Geographics, and the GIS User Community"
+        }
+      ),
+
+      osm: L.tileLayer(
+        "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+          maxZoom: 19,
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">' +
+            "OpenStreetMap</a> contributors"
+        }
+      )
+    };
+
+    let activeBasemap = basemaps.satellite;
+    activeBasemap.addTo(map);
 
     L.control.scale({
       imperial: false
     }).addTo(map);
 
-    let dataLayer;
+    document.getElementById("basemap-select")
+      .addEventListener("change", function () {
+        const nextBasemap = basemaps[this.value];
 
-    document.getElementById("file").addEventListener(
-      "change",
-      async function (event) {
-        const file = event.target.files[0];
-        if (!file) return;
+        if (!nextBasemap || nextBasemap === activeBasemap) return;
 
-        const status = document.getElementById("status");
+        map.removeLayer(activeBasemap);
+        activeBasemap = nextBasemap;
+        activeBasemap.addTo(map);
+        activeBasemap.bringToBack();
+      });
 
-        try {
-          const data = JSON.parse(await file.text());
+    panelToggle.addEventListener("click", function () {
+      const isOpen = sidebar.classList.toggle("open");
+      panelToggle.setAttribute("aria-expanded", String(isOpen));
+    });
 
-          const nextLayer = L.geoJSON(data, {
-            style: {
-              color: "#dc2626",
-              weight: 2,
-              fillColor: "#f97316",
-              fillOpacity: 0.3
-            },
+    function closeMobilePanel() {
+      if (window.innerWidth <= 760) {
+        sidebar.classList.remove("open");
+        panelToggle.setAttribute("aria-expanded", "false");
+      }
+    }
 
-            pointToLayer: function (feature, latlng) {
-              return L.circleMarker(latlng, {
-                radius: 6,
-                color: "#164e63",
-                fillColor: "#06b6d4",
-                fillOpacity: 0.9,
+    map.on("mousemove", function (event) {
+      document.getElementById("coordinates").textContent =
+        "WGS 84 · Bujur: " + event.latlng.lng.toFixed(6) +
+        " · Lintang: " + event.latlng.lat.toFixed(6);
+    });
+
+    function getClass(feature) {
+      const properties = feature.properties || {};
+
+      const entry = Object.entries(properties).find(
+        ([key]) => key.toLowerCase() === "gridcode"
+      );
+
+      if (!entry || entry[1] === null || entry[1] === "") {
+        return null;
+      }
+
+      const value = Number(entry[1]);
+      return Number.isFinite(value) ? value : null;
+    }
+
+    function featureStyle(feature, opacity) {
+      const color = colors[getClass(feature)] || "#3388ff";
+
+      return {
+        color: color,
+        weight: 0.4,
+        opacity: opacity,
+        fillColor: color,
+        fillOpacity: opacity
+      };
+    }
+
+    function normalizeData(data) {
+      if (!data || typeof data !== "object" || Array.isArray(data)) {
+        throw new Error("Isi file bukan objek JSON peta.");
+      }
+
+      const geojsonTypes = [
+        "FeatureCollection",
+        "Feature",
+        "Point",
+        "MultiPoint",
+        "LineString",
+        "MultiLineString",
+        "Polygon",
+        "MultiPolygon",
+        "GeometryCollection"
+      ];
+
+      if (geojsonTypes.includes(data.type)) {
+        return data;
+      }
+
+      if (!Array.isArray(data.features)) {
+        throw new Error(
+          "Format tidak dikenali. Gunakan GeoJSON atau Esri JSON " +
+          "hasil ekspor fitur."
+        );
+      }
+
+      if (
+        !window.Terraformer ||
+        typeof window.Terraformer.arcgisToGeoJSON !== "function"
+      ) {
+        throw new Error(
+          "Pustaka konversi Esri JSON belum dimuat. " +
+          "Periksa internet atau ekspor ulang sebagai GeoJSON."
+        );
+      }
+
+      const features = data.features.map(function (feature) {
+        if (!feature || typeof feature !== "object") {
+          throw new Error("Salah satu fitur Esri JSON tidak valid.");
+        }
+
+        if (!feature.geometry) {
+          return {
+            type: "Feature",
+            properties: feature.attributes || {},
+            geometry: null
+          };
+        }
+
+        const reference =
+          feature.geometry.spatialReference || data.spatialReference;
+
+        if (reference) {
+          const wkid = Number(reference.latestWkid || reference.wkid);
+
+          if (wkid !== 4326) {
+            throw new Error(
+              "Data Esri JSON belum menggunakan WGS 84 (EPSG:4326). " +
+              "Gunakan Project di ArcGIS ke WGS 84, lalu ekspor ulang."
+            );
+          }
+        }
+
+        const converted = window.Terraformer.arcgisToGeoJSON({
+          ...feature,
+          attributes: feature.attributes || {},
+          geometry: {
+            ...feature.geometry,
+            ...(reference ? { spatialReference: reference } : {})
+          }
+        });
+
+        if (!converted || converted.type !== "Feature") {
+          throw new Error("Konversi fitur Esri JSON gagal.");
+        }
+
+        return converted;
+      });
+
+      return {
+        type: "FeatureCollection",
+        features: features
+      };
+    }
+
+    function checkGeometry(geometry) {
+      if (geometry === null) return;
+
+      if (!geometry || typeof geometry !== "object") {
+        throw new Error("Geometri fitur tidak valid.");
+      }
+
+      if (geometry.type === "GeometryCollection") {
+        if (!Array.isArray(geometry.geometries)) {
+          throw new Error("GeometryCollection tidak valid.");
+        }
+
+        geometry.geometries.forEach(checkGeometry);
+        return;
+      }
+
+      const depths = {
+        Point: 0,
+        MultiPoint: 1,
+        LineString: 1,
+        MultiLineString: 2,
+        Polygon: 2,
+        MultiPolygon: 3
+      };
+
+      if (!Object.prototype.hasOwnProperty.call(depths, geometry.type)) {
+        throw new Error("Jenis geometri tidak dikenali: " + geometry.type);
+      }
+
+      function visit(coordinates, depth) {
+        if (!Array.isArray(coordinates)) {
+          throw new Error("Struktur koordinat tidak valid.");
+        }
+
+        if (depth > 0) {
+          coordinates.forEach(function (part) {
+            visit(part, depth - 1);
+          });
+          return;
+        }
+
+        const longitude = coordinates[0];
+        const latitude = coordinates[1];
+
+        if (
+          coordinates.length < 2 ||
+          !Number.isFinite(longitude) ||
+          !Number.isFinite(latitude) ||
+          Math.abs(longitude) > 180 ||
+          Math.abs(latitude) > 90
+        ) {
+          throw new Error(
+            "Koordinat bukan bujur/lintang yang valid. " +
+            "Ekspor data dalam WGS 84 (EPSG:4326)."
+          );
+        }
+      }
+
+      visit(geometry.coordinates, depths[geometry.type]);
+    }
+
+    function validateData(data) {
+      function checkFeature(feature) {
+        if (!feature || feature.type !== "Feature") {
+          throw new Error("Struktur Feature tidak valid.");
+        }
+
+        checkGeometry(feature.geometry);
+      }
+
+      if (data.type === "FeatureCollection") {
+        if (!Array.isArray(data.features)) {
+          throw new Error("Daftar features tidak valid.");
+        }
+
+        data.features.forEach(checkFeature);
+      } else if (data.type === "Feature") {
+        checkFeature(data);
+      } else {
+        checkGeometry(data);
+      }
+    }
+
+    function makePopup(feature, layer, title) {
+      const popup = document.createElement("div");
+
+      const heading = document.createElement("div");
+      heading.className = "popup-title";
+      heading.textContent = title;
+      popup.appendChild(heading);
+
+      const entries = Object.entries(feature.properties || {});
+
+      if (!entries.length) {
+        const row = document.createElement("div");
+        row.textContent = "Objek ini tidak memiliki atribut.";
+        popup.appendChild(row);
+      }
+
+      entries.forEach(function ([key, value]) {
+        const row = document.createElement("div");
+
+        row.textContent =
+          key + ": " +
+          (value === null ? "-" :
+            typeof value === "object"
+              ? JSON.stringify(value)
+              : String(value));
+
+        popup.appendChild(row);
+      });
+
+      layer.bindPopup(popup);
+    }
+
+    function addData(text, key, title) {
+      const cleanedText = text.replace(/^\uFEFF/, "");
+      const data = normalizeData(JSON.parse(cleanedText));
+
+      validateData(data);
+
+      const previous = records.get(key);
+
+      const record = {
+        key: key,
+        title: title,
+        opacity: previous ? previous.opacity : 0.85,
+        layer: null
+      };
+
+      const nextLayer = L.geoJSON(data, {
+        style: function (feature) {
+          return featureStyle(feature, record.opacity);
+        },
+
+        pointToLayer: function (feature, latlng) {
+          return L.circleMarker(latlng, {
+            ...featureStyle(feature, record.opacity),
+            radius: 6,
+            weight: 1
+          });
+        },
+
+        onEachFeature: function (feature, layer) {
+          makePopup(feature, layer, title);
+
+          layer.on("mouseover", function () {
+            if (record.opacity > 0 && typeof layer.setStyle === "function") {
+              layer.setStyle({
+                color: "#ffffff",
                 weight: 2
               });
-            },
-
-            onEachFeature: function (feature, layer) {
-              const popup = document.createElement("div");
-              const properties = feature.properties || {};
-              const entries = Object.entries(properties);
-
-              if (entries.length === 0) {
-                popup.textContent = "Objek ini tidak memiliki atribut.";
-              }
-
-              for (const [key, value] of entries) {
-                const row = document.createElement("div");
-                row.textContent = key + ": " +
-                  (value === null ? "-" :
-                    typeof value === "object"
-                      ? JSON.stringify(value)
-                      : String(value));
-                popup.appendChild(row);
-              }
-
-              layer.bindPopup(popup);
             }
           });
 
-          const bounds = nextLayer.getBounds();
+          layer.on("mouseout", function () {
+            if (typeof layer.setStyle === "function") {
+              layer.setStyle(featureStyle(feature, record.opacity));
+            }
+          });
+        }
+      });
 
-          if (!bounds.isValid()) {
-            throw new Error("Data tidak memiliki geometri yang bisa ditampilkan.");
+      const bounds = nextLayer.getBounds();
+
+      if (!bounds.isValid()) {
+        throw new Error(
+          "File tidak memiliki geometri yang bisa ditampilkan."
+        );
+      }
+
+      const shouldShow =
+        previous ? map.hasLayer(previous.layer) : true;
+
+      if (previous) {
+        map.removeLayer(previous.layer);
+      }
+
+      record.layer = nextLayer;
+      records.set(key, record);
+
+      if (shouldShow) {
+        nextLayer.addTo(map);
+      }
+
+      renderLayerList();
+    }
+
+    function renderLayerList() {
+      layerListEl.replaceChildren();
+      layerCountEl.textContent = String(records.size);
+
+      if (!records.size) {
+        const empty = document.createElement("p");
+        empty.className = "help";
+        empty.textContent = "Belum ada layer yang berhasil dimuat.";
+        layerListEl.appendChild(empty);
+        return;
+      }
+
+      records.forEach(function (record) {
+        const card = document.createElement("div");
+        card.className = "layer-card";
+
+        const top = document.createElement("div");
+        top.className = "layer-top";
+
+        const label = document.createElement("label");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = map.hasLayer(record.layer);
+
+        const name = document.createElement("span");
+        name.textContent = record.title;
+
+        label.append(checkbox, name);
+
+        const focus = document.createElement("button");
+        focus.type = "button";
+        focus.className = "focus-button";
+        focus.textContent = "Fokus";
+        focus.setAttribute("aria-label", "Fokus ke " + record.title);
+
+        top.append(label, focus);
+
+        checkbox.addEventListener("change", function () {
+          if (checkbox.checked) {
+            record.layer.addTo(map);
+          } else {
+            map.removeLayer(record.layer);
+          }
+        });
+
+        focus.addEventListener("click", function () {
+          if (!map.hasLayer(record.layer)) {
+            record.layer.addTo(map);
+            checkbox.checked = true;
           }
 
-          if (dataLayer) {
-            map.removeLayer(dataLayer);
-            controls.removeLayer(dataLayer);
+          map.fitBounds(record.layer.getBounds(), {
+            padding: [25, 25],
+            maxZoom: 17
+          });
+
+          closeMobilePanel();
+        });
+
+        const opacityLabel = document.createElement("label");
+        opacityLabel.className = "opacity-label";
+
+        const sliderId = "opacity-" + layerListEl.children.length;
+
+        opacityLabel.htmlFor = sliderId;
+
+        const opacityText = document.createElement("span");
+        opacityText.textContent = "Opasitas";
+
+        const opacityValue = document.createElement("span");
+        opacityValue.textContent =
+          Math.round(record.opacity * 100) + "%";
+
+        opacityLabel.append(opacityText, opacityValue);
+
+        const slider = document.createElement("input");
+        slider.id = sliderId;
+        slider.type = "range";
+        slider.min = "0";
+        slider.max = "100";
+        slider.step = "1";
+        slider.value = String(Math.round(record.opacity * 100));
+        slider.setAttribute("aria-label", "Opasitas " + record.title);
+
+        slider.addEventListener("input", function () {
+          record.opacity = Number(slider.value) / 100;
+          opacityValue.textContent = slider.value + "%";
+
+          record.layer.setStyle(function (feature) {
+            return featureStyle(feature, record.opacity);
+          });
+        });
+
+        card.append(top, opacityLabel, slider);
+        layerListEl.appendChild(card);
+      });
+    }
+
+    function zoomAll() {
+      const bounds = L.latLngBounds([]);
+
+      records.forEach(function (record) {
+        bounds.extend(record.layer.getBounds());
+      });
+
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, {
+          padding: [30, 30],
+          maxZoom: 17
+        });
+      }
+    }
+
+    document.getElementById("zoom-all")
+      .addEventListener("click", function () {
+        zoomAll();
+        closeMobilePanel();
+      });
+
+    const legend = L.control({
+      position: "bottomright"
+    });
+
+    legend.onAdd = function () {
+      const container = L.DomUtil.create("div", "legend");
+
+      const details = document.createElement("details");
+      details.open = window.innerWidth > 760;
+
+      const summary = document.createElement("summary");
+      summary.textContent = "Keterangan · Wilayah bawah";
+      details.appendChild(summary);
+
+      for (let classNumber = 1; classNumber <= 7; classNumber++) {
+        const row = document.createElement("div");
+        row.className = "legend-row";
+
+        const swatch = document.createElement("span");
+        swatch.className = "swatch";
+        swatch.style.backgroundColor = colors[classNumber];
+
+        const label = document.createElement("span");
+        label.textContent = classLabels[classNumber];
+
+        row.append(swatch, label);
+        details.appendChild(row);
+      }
+
+      const note = document.createElement("p");
+      note.textContent =
+        "Rentang nilai berlaku untuk wilayah bawah. " +
+        "Wilayah atas menggunakan warna kode kelas 1–7; " +
+        "rentang nilainya perlu mengikuti klasifikasi data atas.";
+
+      details.appendChild(note);
+      container.appendChild(details);
+
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.disableScrollPropagation(container);
+
+      return container;
+    };
+
+    legend.addTo(map);
+
+    function reportResults(errors) {
+      renderLayerList();
+      zoomAll();
+
+      let message =
+        records.size + " layer tersedia. " +
+        "Klik objek untuk melihat atributnya.";
+
+      if (errors.length) {
+        message += "\n\nGagal memuat:\n" + errors.join("\n");
+      }
+
+      setStatus(message, errors.length > 0);
+    }
+
+    async function loadPublicData() {
+      const errors = [];
+
+      for (const item of publicFiles) {
+        setStatus("Sedang memuat " + item.title + "...");
+
+        try {
+          const response = await fetch(item.url);
+
+          if (!response.ok) {
+            throw new Error(
+              "HTTP " + response.status +
+              ". Pastikan file ada dan namanya sama persis."
+            );
           }
 
-          dataLayer = nextLayer;
-          dataLayer.addTo(map);
-          controls.addOverlay(dataLayer, file.name);
-          map.fitBounds(bounds, { padding: [25, 25] });
-
-          status.textContent =
-            "Data berhasil ditampilkan: " + file.name +
-            ". Klik objek untuk melihat atribut.";
+          const text = await response.text();
+          addData(text, item.key, item.title);
         } catch (error) {
-          status.textContent = "Gagal membuka data: " + error.message;
-          console.error(error);
+          errors.push(item.key + ": " + error.message);
+          console.error("Gagal memuat " + item.key, error);
         }
       }
-    );
+
+      reportResults(errors);
+    }
+
+    fileInput.addEventListener("change", function (event) {
+      const files = Array.from(event.target.files || []);
+
+      // Memungkinkan file yang sama dipilih kembali.
+      fileInput.value = "";
+
+      if (!files.length) return;
+
+      loadQueue = loadQueue.then(async function () {
+        const errors = [];
+
+        for (const file of files) {
+          setStatus("Sedang membaca " + file.name + "...");
+
+          try {
+            const knownFile = publicFiles.find(
+              (item) => item.key === file.name
+            );
+
+            const title =
+              records.get(file.name)?.title ||
+              knownFile?.title ||
+              file.name;
+
+            addData(await file.text(), file.name, title);
+          } catch (error) {
+            errors.push(file.name + ": " + error.message);
+            console.error("Gagal membaca " + file.name, error);
+          }
+        }
+
+        reportResults(errors);
+        closeMobilePanel();
+      }).catch(function (error) {
+        setStatus("Terjadi kesalahan: " + error.message, true);
+        console.error(error);
+      });
+    });
+
+    loadQueue = loadPublicData().catch(function (error) {
+      setStatus("Gagal memuat peta: " + error.message, true);
+      console.error(error);
+    });
   </script>
 </body>
-</html>go live
+</html>
