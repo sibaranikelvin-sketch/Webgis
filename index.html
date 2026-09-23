@@ -1,1110 +1,2508 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>WebGIS Kelvin Sibarani</title>
+    <meta charset="UTF-8">
 
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  >
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-  <style>
-    :root {
-      --navy: #123448;
-      --teal: #087f8c;
-      --border: #dce5eb;
-      --text: #203747;
-      --muted: #627887;
-    }
+    <title>WebGIS Kelompok 16 | Kemah Kerja Geomatika 2026</title>
 
-    * {
-      box-sizing: border-box;
-    }
 
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: var(--text);
-    }
+    <!-- =====================================================
+         LEAFLET CSS
+    ====================================================== -->
 
-    body {
-      display: flex;
-      flex-direction: column;
-      background: #f4f7fa;
-    }
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
 
-    button, select, input {
-      font: inherit;
-    }
 
-    button, select, .upload-button {
-      cursor: pointer;
-    }
+    <!-- =====================================================
+         STYLE
+    ====================================================== -->
 
-    button:focus-visible,
-    select:focus-visible,
-    input:focus-visible,
-    summary:focus-visible {
-      outline: 3px solid #38bdf8;
-      outline-offset: 3px;
-    }
+    <style>
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 15px;
-      padding: 16px 22px;
-      background: linear-gradient(120deg, #123448, #146779);
-      color: white;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    header h1 {
-      margin: 0;
-      font-size: 22px;
-    }
 
-    header p {
-      margin: 6px 0 0;
-      font-size: 13px;
-      color: #d0e8ee;
-    }
+        html,
+        body {
 
-    .badge {
-      padding: 8px 12px;
-      border: 1px solid #ffffff55;
-      border-radius: 20px;
-      font-size: 12px;
-      white-space: nowrap;
-    }
+            width: 100%;
+            height: 100%;
 
-    .workspace {
-      display: flex;
-      flex: 1;
-      min-height: 0;
-      position: relative;
-    }
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
 
-    aside {
-      width: 310px;
-      flex-shrink: 0;
-      overflow-y: auto;
-      padding: 20px;
-      background: white;
-      border-right: 1px solid var(--border);
-    }
+        }
 
-    .section {
-      margin-bottom: 22px;
-    }
 
-    .section h2 {
-      margin: 0 0 12px;
-      font-size: 15px;
-    }
+        body {
 
-    .help {
-      font-size: 12px;
-      line-height: 1.6;
-      color: var(--muted);
-    }
+            overflow: hidden;
 
-    select, .primary-button, .upload-button {
-      display: block;
-      width: 100%;
-      padding: 11px 12px;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-    }
+        }
 
-    select {
-      background: #f8fafc;
-      color: var(--text);
-      margin-bottom: 10px;
-    }
 
-    .primary-button {
-      background: var(--teal);
-      color: white;
-      border-color: var(--teal);
-    }
+        /* =================================================
+           PETA
+        ================================================= */
 
-    .upload-button {
-      text-align: center;
-      background: #edf8fa;
-      color: #086574;
-      font-weight: bold;
-    }
+        #map {
 
-    #file {
-      width: 100%;
-      margin-top: 12px;
-      font-size: 12px;
-    }
+            position: fixed;
 
-    .layer-card {
-      margin-bottom: 10px;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: #f8fafc;
-    }
+            top: 0;
+            left: 0;
 
-    .layer-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
+            width: 100%;
+            height: 100%;
 
-    .layer-top label {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-size: 13px;
-      font-weight: bold;
-      overflow-wrap: anywhere;
-    }
+            z-index: 1;
 
-    .focus-button {
-      padding: 5px 8px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: white;
-      font-size: 11px;
-      color: var(--text);
-    }
+        }
 
-    .opacity-label {
-      display: flex;
-      justify-content: space-between;
-      margin: 12px 0 5px;
-      font-size: 11px;
-      color: var(--muted);
-    }
 
-    input[type="range"] {
-      width: 100%;
-      accent-color: var(--teal);
-    }
+        /* =================================================
+           HEADER
+        ================================================= */
 
-    input[type="checkbox"] {
-      accent-color: var(--teal);
-    }
+        .header {
 
-    #status {
-      padding: 12px;
-      border-radius: 9px;
-      background: #eef5f8;
-      font-size: 12px;
-      line-height: 1.6;
-      white-space: pre-line;
-      overflow-wrap: anywhere;
-    }
+            position: fixed;
 
-    #status.error {
-      background: #fff1f1;
-      color: #a12323;
-    }
+            top: 0;
+            left: 0;
 
-    .credit {
-      padding-top: 12px;
-      border-top: 1px solid var(--border);
-      font-size: 11px;
-      line-height: 1.6;
-      color: var(--muted);
-    }
+            width: 100%;
 
-    #map {
-      flex: 1;
-      min-width: 0;
-      min-height: 300px;
-      background: #dce8ed;
-    }
+            height: 90px;
 
-    footer {
-      padding: 7px 15px;
-      background: white;
-      border-top: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 11px;
-    }
+            z-index: 1000;
 
-    .legend {
-      background: white;
-      padding: 12px 14px;
-      border-radius: 10px;
-      box-shadow: 0 4px 18px #00000026;
-      max-width: 310px;
-      max-height: 45vh;
-      overflow-y: auto;
-      color: var(--text);
-    }
+            display: flex;
 
-    .legend summary {
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 12px;
-    }
+            align-items: center;
 
-    .legend-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 8px;
-      font-size: 11px;
-    }
+            justify-content: space-between;
 
-    .swatch {
-      width: 22px;
-      height: 13px;
-      flex-shrink: 0;
-      border: 1px solid #78909c;
-    }
+            padding: 0 45px;
 
-    .legend p {
-      max-width: 270px;
-      margin: 12px 0 0;
-      font-size: 11px;
-      line-height: 1.5;
-      color: var(--muted);
-    }
+            background:
+                rgba(255, 255, 255, 0.94);
 
-    .leaflet-popup-content {
-      max-height: 270px;
-      overflow-y: auto;
-      line-height: 1.6;
-    }
+            backdrop-filter:
+                blur(8px);
 
-    .popup-title {
-      font-weight: bold;
-      margin-bottom: 8px;
-      color: #087f8c;
-    }
+            box-shadow:
+                0 2px 10px
+                rgba(0, 0, 0, 0.15);
 
-    #panel-toggle {
-      display: none;
-      padding: 8px 11px;
-      background: #ffffff18;
-      border: 1px solid #ffffff55;
-      border-radius: 7px;
-      color: white;
-    }
+        }
 
-    @media (max-width: 760px) {
-      header {
-        padding: 12px 14px;
-      }
 
-      header h1 {
-        font-size: 17px;
-      }
+        /* =================================================
+           LOGO / NAMA
+        ================================================= */
 
-      header p {
-        font-size: 11px;
-      }
+        .brand {
 
-      .badge {
-        display: none;
-      }
+            display: flex;
 
-      #panel-toggle {
-        display: block;
-      }
+            align-items: center;
 
-      aside {
-        display: none;
-        position: absolute;
-        inset: 0 auto 0 0;
-        z-index: 1100;
-        width: min(310px, 88vw);
-        box-shadow: 5px 0 20px #00000025;
-      }
+            gap: 13px;
 
-      aside.open {
-        display: block;
-      }
+        }
 
-      .legend {
-        max-width: 260px;
-        padding: 10px;
-      }
 
-      footer {
-        font-size: 10px;
-      }
-    }
-  </style>
+        .brand-icon {
+
+            width: 52px;
+            height: 52px;
+
+            border-radius: 50%;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #1557a6,
+                    #3c88d6
+                );
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            color: white;
+
+            font-size: 26px;
+
+            box-shadow:
+                0 3px 8px
+                rgba(0,0,0,0.2);
+
+        }
+
+
+        .brand-text h1 {
+
+            font-size: 25px;
+
+            color: #111;
+
+        }
+
+
+        .brand-text p {
+
+            font-size: 12px;
+
+            color: #666;
+
+            margin-top: 3px;
+
+        }
+
+
+        /* =================================================
+           NAVIGASI
+        ================================================= */
+
+        .navigation {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 5px;
+
+        }
+
+
+        .navigation button {
+
+            border: none;
+
+            background: transparent;
+
+            padding:
+                11px 17px;
+
+            border-radius: 25px;
+
+            font-size: 14px;
+
+            cursor: pointer;
+
+            color: #222;
+
+        }
+
+
+        .navigation button:hover {
+
+            background:
+                #edf3ff;
+
+            color:
+                #1759a6;
+
+        }
+
+
+        .navigation .active {
+
+            border:
+                1px solid #bbb;
+
+            background:
+                #fff;
+
+        }
+
+
+        /* =================================================
+           PANEL TAMBAH LAYER
+        ================================================= */
+
+        .layer-panel {
+
+            position: fixed;
+
+            top: 105px;
+
+            right: 20px;
+
+            width: 310px;
+
+            background: white;
+
+            z-index: 1500;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 5px 25px
+                rgba(0,0,0,0.22);
+
+            display: none;
+
+            overflow: hidden;
+
+        }
+
+
+        .layer-panel.show {
+
+            display: block;
+
+        }
+
+
+        .panel-header {
+
+            background:
+                #245eac;
+
+            color: white;
+
+            padding: 15px;
+
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            align-items: center;
+
+        }
+
+
+        .panel-header h3 {
+
+            font-size: 17px;
+
+        }
+
+
+        .close-panel {
+
+            border: none;
+
+            background: transparent;
+
+            color: white;
+
+            font-size: 22px;
+
+            cursor: pointer;
+
+        }
+
+
+        .panel-content {
+
+            padding: 18px;
+
+        }
+
+
+        .upload-description {
+
+            font-size: 13px;
+
+            color: #555;
+
+            line-height: 1.5;
+
+            margin-bottom: 15px;
+
+        }
+
+
+        .upload-button {
+
+            display: block;
+
+            width: 100%;
+
+            text-align: center;
+
+            background:
+                #4057bd;
+
+            color: white;
+
+            padding: 12px;
+
+            border-radius: 7px;
+
+            cursor: pointer;
+
+            font-size: 14px;
+
+            margin-bottom: 10px;
+
+        }
+
+
+        .upload-button:hover {
+
+            background:
+                #3046a8;
+
+        }
+
+
+        #fileInput {
+
+            display: none;
+
+        }
+
+
+        .file-name {
+
+            font-size: 12px;
+
+            color: #666;
+
+            word-break: break-word;
+
+            margin-top: 8px;
+
+        }
+
+
+        /* =================================================
+           DAFTAR LAYER
+        ================================================= */
+
+        .layer-list {
+
+            margin-top: 18px;
+
+            border-top:
+                1px solid #ddd;
+
+            padding-top: 12px;
+
+        }
+
+
+        .layer-list-title {
+
+            font-size: 14px;
+
+            font-weight: bold;
+
+            color: #333;
+
+            margin-bottom: 8px;
+
+        }
+
+
+        .layer-item {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content:
+                space-between;
+
+            gap: 5px;
+
+            background:
+                #f5f7fa;
+
+            padding: 9px;
+
+            border-radius: 7px;
+
+            margin-bottom: 7px;
+
+            font-size: 12px;
+
+        }
+
+
+        .layer-name {
+
+            flex: 1;
+
+            overflow: hidden;
+
+            text-overflow:
+                ellipsis;
+
+            white-space:
+                nowrap;
+
+        }
+
+
+        .layer-actions {
+
+            display: flex;
+
+            gap: 3px;
+
+        }
+
+
+        .layer-actions button {
+
+            border: none;
+
+            background: white;
+
+            border-radius: 5px;
+
+            cursor: pointer;
+
+            padding: 4px 6px;
+
+        }
+
+
+        .layer-actions button:hover {
+
+            background: #e1e7f0;
+
+        }
+
+
+        /* =================================================
+           KOORDINAT
+        ================================================= */
+
+        .coordinate-box {
+
+            position: fixed;
+
+            left: 15px;
+
+            bottom: 15px;
+
+            z-index: 1500;
+
+            background:
+                rgba(255,255,255,0.94);
+
+            padding:
+                9px 14px;
+
+            border-radius: 7px;
+
+            box-shadow:
+                0 2px 10px
+                rgba(0,0,0,0.2);
+
+            font-size: 13px;
+
+            color: #222;
+
+            min-width: 230px;
+
+        }
+
+
+        .coordinate-title {
+
+            font-size: 11px;
+
+            color: #777;
+
+            margin-bottom: 3px;
+
+        }
+
+
+        .coordinate-value {
+
+            font-weight: bold;
+
+            color:
+                #1557a6;
+
+        }
+
+
+        /* =================================================
+           INFORMASI AWAL
+        ================================================= */
+
+        .welcome-box {
+
+            position: fixed;
+
+            z-index: 700;
+
+            top: 53%;
+
+            left: 50%;
+
+            transform:
+                translate(-50%, -50%);
+
+            width: 750px;
+
+            max-width: 85%;
+
+            text-align: center;
+
+            pointer-events: none;
+
+        }
+
+
+        .welcome-box h2 {
+
+            font-size: 42px;
+
+            line-height: 1.3;
+
+            color:
+                #2865b7;
+
+            text-shadow:
+                0 1px 3px white;
+
+            margin-bottom: 25px;
+
+        }
+
+
+        .welcome-box p {
+
+            font-size: 16px;
+
+            color: #333;
+
+            background:
+                rgba(255,255,255,0.75);
+
+            display: inline-block;
+
+            padding: 9px 18px;
+
+            border-radius: 20px;
+
+        }
+
+
+        /* =================================================
+           TOMBOL TAMBAH LAYER BESAR
+        ================================================= */
+
+        .add-layer-main {
+
+            pointer-events: auto;
+
+            border: none;
+
+            background:
+                #4057bd;
+
+            color: white;
+
+            padding:
+                14px 30px;
+
+            border-radius: 28px;
+
+            cursor: pointer;
+
+            font-size: 15px;
+
+            margin-top: 18px;
+
+            box-shadow:
+                0 4px 15px
+                rgba(40,60,170,0.3);
+
+        }
+
+
+        .add-layer-main:hover {
+
+            background:
+                #3047aa;
+
+        }
+
+
+        /* =================================================
+           LEAFLET CONTROL
+        ================================================= */
+
+        .leaflet-top {
+
+            margin-top: 100px;
+
+        }
+
+
+        /* =================================================
+           POPUP
+        ================================================= */
+
+        .popup-title {
+
+            font-weight: bold;
+
+            font-size: 15px;
+
+            color:
+                #1557a6;
+
+            margin-bottom: 8px;
+
+        }
+
+
+        .popup-row {
+
+            font-size: 12px;
+
+            margin-bottom: 4px;
+
+        }
+
+
+        /* =================================================
+           RESPONSIVE
+        ================================================= */
+
+        @media(max-width: 800px) {
+
+            .header {
+
+                padding:
+                    0 15px;
+
+            }
+
+
+            .brand-text h1 {
+
+                font-size: 18px;
+
+            }
+
+
+            .brand-text p {
+
+                display: none;
+
+            }
+
+
+            .navigation button {
+
+                padding:
+                    8px;
+
+                font-size: 11px;
+
+            }
+
+
+            .welcome-box h2 {
+
+                font-size: 30px;
+
+            }
+
+        }
+
+        .map-status {
+            position: fixed; left: 18px; bottom: 92px; z-index: 900;
+            max-width: min(430px, calc(100vw - 36px)); padding: 10px 14px;
+            border-radius: 10px; background: rgba(255,255,255,.94);
+            box-shadow: 0 3px 14px rgba(0,0,0,.18); color: #29445c;
+            font-size: 12px; line-height: 1.45;
+        }
+        .map-status.error { color: #9f1239; background: #fff1f2; }
+        .bathymetry-legend {
+            position: fixed; right: 18px; bottom: 28px; z-index: 900;
+            width: 300px; padding: 14px 16px; border-radius: 12px;
+            background: rgba(255,255,255,.95); box-shadow: 0 4px 18px rgba(0,0,0,.22);
+            color: #172536;
+        }
+        .bathymetry-legend h3 { font-size: 13px; margin-bottom: 9px; }
+        .legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 12px; }
+        .legend-item { display: flex; align-items: center; gap: 7px; font-size: 10px; }
+        .legend-color { width: 25px; height: 14px; border: 1px solid rgba(0,0,0,.25); flex: 0 0 auto; }
+        .legend-note { margin-top: 9px; color: #607080; font-size: 10px; line-height: 1.4; }
+        @media(max-width: 700px) {
+            .bathymetry-legend { right: 10px; bottom: 12px; width: 245px; padding: 10px; }
+            .legend-grid { grid-template-columns: 1fr; gap: 4px; }
+            .map-status { left: 10px; bottom: 70px; max-width: 205px; }
+        }
+
+    </style>
+
 </head>
 
+
 <body>
-  <header>
-    <div>
-      <h1>WebGIS Kelvin Sibarani</h1>
-      <p>Eksplorasi peta penelitian · Kelompok 16</p>
-    </div>
 
-    <span class="badge">Peta interaktif</span>
 
-    <button
-      id="panel-toggle"
-      type="button"
-      aria-controls="sidebar"
-      aria-expanded="false"
+    <!-- =================================================
+         PETA
+    ================================================= -->
+
+    <div id="map"></div>
+
+
+    <!-- =================================================
+         HEADER
+    ================================================= -->
+
+    <header class="header">
+
+
+        <div class="brand">
+
+
+            <div class="brand-icon">
+
+                🌐
+
+            </div>
+
+
+            <div class="brand-text">
+
+                <h1>
+                    WebGIS Kelompok 16
+                </h1>
+
+                <p>
+                    Kemah Kerja Geomatika 2026
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+        <nav class="navigation">
+
+
+            <button
+                class="active"
+                onclick="goHome()"
+            >
+
+                BERANDA
+
+            </button>
+
+
+            <button
+                onclick="openLayerPanel()"
+            >
+
+                KATALOG
+
+            </button>
+
+
+            <button
+                onclick="goMap()"
+            >
+
+                PETA
+
+            </button>
+
+
+            <button
+                onclick="showAPI()"
+            >
+
+                API
+
+            </button>
+
+
+        </nav>
+
+    </header>
+
+
+    <!-- =================================================
+         WELCOME
+    ================================================= -->
+
+    <div
+        class="welcome-box"
+        id="welcomeBox"
     >
-      Pengaturan
-    </button>
-  </header>
 
-  <main class="workspace">
-    <aside id="sidebar" aria-label="Pengaturan peta">
-      <section class="section">
-        <h2>Peta dasar</h2>
+        <h2>
 
-        <select id="basemap-select" aria-label="Pilih peta dasar">
-          <option value="satellite">Citra satelit Esri</option>
-          <option value="osm">OpenStreetMap</option>
-        </select>
+            Platform terintegrasi
+            <br>
 
-        <button id="zoom-all" class="primary-button" type="button">
-          Lihat seluruh wilayah
-        </button>
-      </section>
+            untuk pengelolaan dan berbagi-pakai
+            <br>
 
-      <section class="section">
-        <h2>Layer penelitian · <span id="layer-count">0</span></h2>
-        <div id="layer-list"></div>
+            data spasial.
 
-        <p class="help">
-          Centang untuk menampilkan layer. Atur opasitas untuk melihat
-          peta dasar di bawahnya.
+        </h2>
+
+
+        <p>
+
+            Peta kedalaman perairan berbasis WebGIS
+
         </p>
-      </section>
 
-      <section class="section">
-        <h2>Tambahkan data</h2>
 
-        <label class="upload-button" for="file">
-          Pilih file peta
-        </label>
+        <br>
 
-        <input
-          id="file"
-          type="file"
-          accept=".geojson,.json"
-          multiple
+
+        <button
+            class="add-layer-main"
+            onclick="openLayerPanel()"
         >
 
-        <p class="help">
-          Mendukung GeoJSON dan Esri JSON dalam WGS 84.
-          Kamu dapat memilih beberapa file sekaligus.
-          File pilihan ini hanya ditampilkan di browser.
-        </p>
-      </section>
+            + TAMBAH DATA
 
-      <p id="status" role="status" aria-live="polite">
-        Sedang memuat data penelitian...
-      </p>
+        </button>
 
-      <div class="credit">
-        WebGIS Kelvin Sibarani<br>
-        Peta dasar: Esri / OpenStreetMap<br>
-        Koordinat data: WGS 84 (EPSG:4326)
-      </div>
+    </div>
+
+
+    <!-- =================================================
+         PANEL LAYER
+    ================================================= -->
+
+    <div
+        class="layer-panel"
+        id="layerPanel"
+    >
+
+
+        <div class="panel-header">
+
+
+            <h3>
+                📂 Katalog & Layer
+            </h3>
+
+
+            <button
+                class="close-panel"
+                onclick="closeLayerPanel()"
+            >
+
+                ×
+
+            </button>
+
+        </div>
+
+
+        <div class="panel-content">
+
+
+            <p class="upload-description">
+
+                Tambahkan data spasial ke dalam
+                WebGIS. Format yang dapat dibaca:
+
+                <br><br>
+
+                • GeoJSON (.geojson)
+
+                <br>
+
+                • JSON (.json)
+
+                <br>
+
+                • ArcGIS JSON
+
+            </p>
+
+
+            <label
+                for="fileInput"
+                class="upload-button"
+            >
+
+                + PILIH DATA SPASIAL
+
+            </label>
+
+
+            <input
+                type="file"
+                id="fileInput"
+                accept=".json,.geojson"
+            >
+
+
+            <div
+                class="file-name"
+                id="fileName"
+            >
+
+                Belum ada file dipilih.
+
+            </div>
+
+
+            <div class="layer-list">
+
+
+                <div class="layer-list-title">
+
+                    Layer Aktif
+
+                </div>
+
+
+                <div id="layerList">
+
+                    <div
+                        style="
+                        font-size:12px;
+                        color:#888;
+                        "
+                    >
+
+                        Belum ada data.
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         KOORDINAT
+    ================================================= -->
+
+    <div class="coordinate-box">
+
+
+        <div class="coordinate-title">
+
+            KOORDINAT KURSOR
+
+        </div>
+
+
+        <div
+            class="coordinate-value"
+            id="coordinates"
+        >
+
+            Lat: -
+            <br>
+
+            Lon: -
+
+        </div>
+
+
+    </div>
+
+    <div class="map-status" id="mapStatus">Menyiapkan dua layer batimetri otomatis...</div>
+
+    <aside class="bathymetry-legend" aria-label="Keterangan peta batimetri">
+        <h3>KETERANGAN KEDALAMAN (m)</h3>
+        <div class="legend-grid" id="bathymetryLegend"></div>
+        <p class="legend-note">Warna semakin gelap menunjukkan nilai kedalaman yang semakin besar. Sistem koordinat: WGS 84 (EPSG:4326).</p>
     </aside>
 
-    <div id="map" aria-label="Peta penelitian"></div>
-  </main>
 
-  <footer id="coordinates">
-    Klik objek peta untuk melihat atributnya.
-  </footer>
+    <!-- =================================================
+         LEAFLET
+    ================================================= -->
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/@terraformer/arcgis"></script>
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    ></script>
+    <script src="https://unpkg.com/@terraformer/arcgis"></script>
 
-  <script>
-    "use strict";
 
-    // Nama file harus sama persis dengan file di folder/GitHub.
-    const publicFiles = [
-      {
-        url: "./disinibawah.json",
-        key: "disinibawah.json",
-        title: "Wilayah bawah"
-      },
-      {
-        url: "./atas.json",
-        key: "atas.json",
-        title: "Wilayah atas"
-      }
-    ];
+    <!-- =================================================
+         JAVASCRIPT
+    ================================================= -->
 
-    const colors = {
-      1: "#c7eef2",
-      2: "#a0cee5",
-      3: "#69a8dc",
-      4: "#3687cf",
-      5: "#245bb7",
-      6: "#283a99",
-      7: "#101478"
-    };
+    <script>
 
-    // Rentang berikut khusus legenda wilayah bawah.
-    // Pastikan sesuai dengan hasil Reclassify datamu.
-    const classLabels = {
-      1: "6,796735287 – 10,85005275",
-      2: "10,85005276 – 13,41715381",
-      3: "13,41715382 – 15,57892312",
-      4: "15,57892313 – 17,74069244",
-      5: "17,74069245 – 19,90246175",
-      6: "19,90246176 – 21,72645461",
-      7: "21,72645462 – 24,0233345"
-    };
 
-    const statusEl = document.getElementById("status");
-    const layerListEl = document.getElementById("layer-list");
-    const layerCountEl = document.getElementById("layer-count");
-    const sidebar = document.getElementById("sidebar");
-    const panelToggle = document.getElementById("panel-toggle");
-    const fileInput = document.getElementById("file");
+        /* =================================================
+           1. INISIALISASI PETA
+        ================================================= */
 
-    const records = new Map();
-    let loadQueue = Promise.resolve();
 
-    function setStatus(message, isError = false) {
-      statusEl.textContent = message;
-      statusEl.classList.toggle("error", isError);
-    }
-
-    if (!window.L) {
-      setStatus(
-        "Pustaka peta gagal dimuat. Periksa internet, lalu muat ulang halaman.",
-        true
-      );
-      throw new Error("Leaflet gagal dimuat.");
-    }
-
-    const map = L.map("map", {
-      preferCanvas: true
-    }).setView([-5.55, 105.26], 13);
-
-    const basemaps = {
-      satellite: L.tileLayer(
-        "https://services.arcgisonline.com/ArcGIS/rest/services/" +
-        "World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        {
-          maxZoom: 19,
-          attribution:
-            "Tiles &copy; Esri &mdash; Source: Esri, Maxar, " +
-            "Earthstar Geographics, and the GIS User Community"
-        }
-      ),
-
-      osm: L.tileLayer(
-        "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-          maxZoom: 19,
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">' +
-            "OpenStreetMap</a> contributors"
-        }
-      )
-    };
-
-    let activeBasemap = basemaps.satellite;
-    activeBasemap.addTo(map);
-
-    L.control.scale({
-      imperial: false
-    }).addTo(map);
-
-    document.getElementById("basemap-select")
-      .addEventListener("change", function () {
-        const nextBasemap = basemaps[this.value];
-
-        if (!nextBasemap || nextBasemap === activeBasemap) return;
-
-        map.removeLayer(activeBasemap);
-        activeBasemap = nextBasemap;
-        activeBasemap.addTo(map);
-        activeBasemap.bringToBack();
-      });
-
-    panelToggle.addEventListener("click", function () {
-      const isOpen = sidebar.classList.toggle("open");
-      panelToggle.setAttribute("aria-expanded", String(isOpen));
-    });
-
-    function closeMobilePanel() {
-      if (window.innerWidth <= 760) {
-        sidebar.classList.remove("open");
-        panelToggle.setAttribute("aria-expanded", "false");
-      }
-    }
-
-    map.on("mousemove", function (event) {
-      document.getElementById("coordinates").textContent =
-        "WGS 84 · Bujur: " + event.latlng.lng.toFixed(6) +
-        " · Lintang: " + event.latlng.lat.toFixed(6);
-    });
-
-    function getClass(feature) {
-      const properties = feature.properties || {};
-
-      const entry = Object.entries(properties).find(
-        ([key]) => key.toLowerCase() === "gridcode"
-      );
-
-      if (!entry || entry[1] === null || entry[1] === "") {
-        return null;
-      }
-
-      const value = Number(entry[1]);
-      return Number.isFinite(value) ? value : null;
-    }
-
-    function featureStyle(feature, opacity) {
-      const color = colors[getClass(feature)] || "#3388ff";
-
-      return {
-        color: color,
-        weight: 0.4,
-        opacity: opacity,
-        fillColor: color,
-        fillOpacity: opacity
-      };
-    }
-
-    function normalizeData(data) {
-      if (!data || typeof data !== "object" || Array.isArray(data)) {
-        throw new Error("Isi file bukan objek JSON peta.");
-      }
-
-      const geojsonTypes = [
-        "FeatureCollection",
-        "Feature",
-        "Point",
-        "MultiPoint",
-        "LineString",
-        "MultiLineString",
-        "Polygon",
-        "MultiPolygon",
-        "GeometryCollection"
-      ];
-
-      if (geojsonTypes.includes(data.type)) {
-        return data;
-      }
-
-      if (!Array.isArray(data.features)) {
-        throw new Error(
-          "Format tidak dikenali. Gunakan GeoJSON atau Esri JSON " +
-          "hasil ekspor fitur."
+        const map = L.map(
+            "map",
+            {
+                zoomControl: true,
+                minZoom: 3,
+                maxZoom: 19
+            }
         );
-      }
 
-      if (
-        !window.Terraformer ||
-        typeof window.Terraformer.arcgisToGeoJSON !== "function"
-      ) {
-        throw new Error(
-          "Pustaka konversi Esri JSON belum dimuat. " +
-          "Periksa internet atau ekspor ulang sebagai GeoJSON."
+
+        map.setView([-5.55, 105.26], 13);
+
+
+        /* =================================================
+           2. OPEN STREET MAP
+        ================================================= */
+
+
+        const osm = L.tileLayer(
+
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+
+            {
+
+                attribution:
+                    '&copy; OpenStreetMap contributors',
+
+                maxZoom: 19
+
+            }
+
         );
-      }
 
-      const features = data.features.map(function (feature) {
-        if (!feature || typeof feature !== "object") {
-          throw new Error("Salah satu fitur Esri JSON tidak valid.");
+
+        /* Peta dasar awal ditambahkan setelah citra satelit dibuat. */
+
+
+        /* =================================================
+           3. ESRI WORLD IMAGERY / CITRA
+        ================================================= */
+
+
+        const esriSatellite = L.tileLayer(
+
+            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+
+            {
+
+                attribution:
+                    "Tiles &copy; Esri",
+
+                maxZoom: 19
+
+            }
+
+        );
+
+        esriSatellite.addTo(map);
+
+
+        /* =================================================
+           4. ESRI WORLD STREET MAP
+        ================================================= */
+
+
+        const esriStreet = L.tileLayer(
+
+            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+
+            {
+
+                attribution:
+                    "Tiles &copy; Esri",
+
+                maxZoom: 19
+
+            }
+
+        );
+
+
+        /* =================================================
+           5. ESRI TOPOGRAPHIC
+        ================================================= */
+
+
+        const esriTopo = L.tileLayer(
+
+            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+
+            {
+
+                attribution:
+                    "Tiles &copy; Esri",
+
+                maxZoom: 19
+
+            }
+
+        );
+
+
+        /* =================================================
+           6. BASEMAP CONTROL
+        ================================================= */
+
+
+        const baseMaps = {
+
+
+            "OpenStreetMap":
+                osm,
+
+
+            "Esri World Imagery (Citra)":
+                esriSatellite,
+
+
+            "Esri World Street Map":
+                esriStreet,
+
+
+            "Esri Topographic":
+                esriTopo
+
+        };
+
+
+        L.control.layers(
+
+            baseMaps,
+
+            null,
+
+            {
+
+                collapsed: false
+
+            }
+
+        ).addTo(map);
+
+
+        /* =================================================
+           7. KOORDINAT KURSOR
+        ================================================= */
+
+
+        map.on(
+
+            "mousemove",
+
+            function(event) {
+
+
+                const lat =
+                    event.latlng.lat
+                    .toFixed(6);
+
+
+                const lon =
+                    event.latlng.lng
+                    .toFixed(6);
+
+
+                document
+                    .getElementById(
+                        "coordinates"
+                    )
+                    .innerHTML =
+
+                    "Lat: "
+                    + lat
+                    + "<br>"
+                    + "Lon: "
+                    + lon;
+
+            }
+
+        );
+
+
+        /* =================================================
+           8. KLIK PETA
+        ================================================= */
+
+
+        map.on(
+
+            "click",
+
+            function(event) {
+
+
+                const lat =
+                    event.latlng.lat
+                    .toFixed(6);
+
+
+                const lon =
+                    event.latlng.lng
+                    .toFixed(6);
+
+
+                L.popup()
+
+                    .setLatLng(
+                        event.latlng
+                    )
+
+                    .setContent(
+
+                        "<b>Koordinat</b><br>" +
+
+                        "Latitude: "
+                        + lat
+                        + "<br>" +
+
+                        "Longitude: "
+                        + lon
+
+                    )
+
+                    .openOn(map);
+
+            }
+
+        );
+
+
+        /* =================================================
+           9. VARIABEL LAYER
+        ================================================= */
+
+
+        let layers = [];
+
+        let layerCounter = 0;
+
+        const DEFAULT_FILES = [
+            { url: "./disinibawah.json", name: "Batimetri Wilayah Bawah" },
+            { url: "./atas.json", name: "Batimetri Wilayah Atas" }
+        ];
+
+        const BATHYMETRY_COLORS = {
+            1: "#c7eef2", 2: "#a0cee5", 3: "#69a8dc", 4: "#3687cf",
+            5: "#245bb7", 6: "#283a99", 7: "#101478"
+        };
+
+        const BATHYMETRY_LABELS = {
+            1: "6,796735287 – 10,85005275",
+            2: "10,85005276 – 13,41715381",
+            3: "13,41715382 – 15,57892312",
+            4: "15,57892313 – 17,74069244",
+            5: "17,74069245 – 19,90246175",
+            6: "19,90246176 – 21,72645461",
+            7: "21,72645462 – 24,0233345"
+        };
+
+        function getBathymetryClass(feature) {
+            const properties = feature && feature.properties ? feature.properties : {};
+            const key = Object.keys(properties).find(function(name) {
+                const lower = name.toLowerCase();
+                return lower === "gridcode" || lower === "value";
+            });
+            const value = key ? Number(properties[key]) : NaN;
+            return Number.isFinite(value) ? Math.round(value) : null;
         }
 
-        if (!feature.geometry) {
-          return {
-            type: "Feature",
-            properties: feature.attributes || {},
-            geometry: null
-          };
+        function bathymetryStyle(feature) {
+            const color = BATHYMETRY_COLORS[getBathymetryClass(feature)] || "#3388ff";
+            return { color: color, weight: 0.7, opacity: 1, fillColor: color, fillOpacity: 0.82 };
         }
 
-        const reference =
-          feature.geometry.spatialReference || data.spatialReference;
+        function normalizeSpatialData(data) {
+            if (!data || typeof data !== "object") throw new Error("Isi JSON tidak valid.");
+            if (typeof data.type === "string") return data;
+            if (!Array.isArray(data.features)) throw new Error("Format bukan GeoJSON atau Esri JSON.");
+            if (!window.Terraformer || typeof window.Terraformer.arcgisToGeoJSON !== "function") {
+                throw new Error("Konverter Esri JSON tidak tersedia. Periksa koneksi internet.");
+            }
+            return {
+                type: "FeatureCollection",
+                features: data.features.map(function(feature) {
+                    return window.Terraformer.arcgisToGeoJSON(feature);
+                })
+            };
+        }
 
-        if (reference) {
-          const wkid = Number(reference.latestWkid || reference.wkid);
+        function setMapStatus(message, isError) {
+            const element = document.getElementById("mapStatus");
+            element.textContent = message;
+            element.classList.toggle("error", Boolean(isError));
+        }
 
-          if (wkid !== 4326) {
-            throw new Error(
-              "Data Esri JSON belum menggunakan WGS 84 (EPSG:4326). " +
-              "Gunakan Project di ArcGIS ke WGS 84, lalu ekspor ulang."
+        function buildLegend() {
+            const container = document.getElementById("bathymetryLegend");
+            Object.keys(BATHYMETRY_LABELS).forEach(function(code) {
+                const item = document.createElement("div");
+                item.className = "legend-item";
+                const color = document.createElement("span");
+                color.className = "legend-color";
+                color.style.background = BATHYMETRY_COLORS[code];
+                const label = document.createElement("span");
+                label.textContent = BATHYMETRY_LABELS[code];
+                item.append(color, label);
+                container.appendChild(item);
+            });
+        }
+
+
+        /* =================================================
+           10. BUKA PANEL
+        ================================================= */
+
+
+        function openLayerPanel() {
+
+
+            document
+                .getElementById(
+                    "layerPanel"
+                )
+                .classList
+                .add("show");
+
+
+            document
+                .getElementById(
+                    "welcomeBox"
+                )
+                .style.display =
+                "none";
+
+        }
+
+
+        /* =================================================
+           11. TUTUP PANEL
+        ================================================= */
+
+
+        function closeLayerPanel() {
+
+
+            document
+                .getElementById(
+                    "layerPanel"
+                )
+                .classList
+                .remove("show");
+
+        }
+
+
+        /* =================================================
+           12. FILE INPUT
+        ================================================= */
+
+
+        document
+            .getElementById(
+                "fileInput"
+            )
+            .addEventListener(
+
+                "change",
+
+                function(event) {
+
+
+                    const file =
+                        event.target.files[0];
+
+
+                    if (!file) {
+
+                        return;
+
+                    }
+
+
+                    document
+                        .getElementById(
+                            "fileName"
+                        )
+                        .textContent =
+                        file.name;
+
+
+                    const reader =
+                        new FileReader();
+
+
+                    reader.onload =
+                        function(e) {
+
+
+                            try {
+
+
+                                const data =
+                                    JSON.parse(
+                                        e.target.result
+                                    );
+
+
+                                addSpatialData(
+
+                                    normalizeSpatialData(data),
+
+                                    file.name
+
+                                );
+
+
+                            }
+
+                            catch(error) {
+
+
+                                console.error(
+                                    error
+                                );
+
+
+                                alert(
+
+                                    "Data gagal dibaca.\n\n" +
+
+                                    "Pastikan file merupakan " +
+
+                                    "GeoJSON atau ArcGIS JSON."
+
+                                );
+
+                            }
+
+                        };
+
+
+                    reader.readAsText(
+                        file
+                    );
+
+
+                    /*
+                     * Reset supaya file
+                     * yang sama dapat
+                     * di-upload kembali
+                     */
+
+                    event.target.value = "";
+
+                }
+
             );
-          }
+
+
+        /* =================================================
+           13. TAMBAHKAN DATA SPASIAL
+        ================================================= */
+
+
+        function addSpatialData(data, fileName, showMessage = true) {
+
+
+            let newLayer = null;
+
+
+            /* =============================================
+               GEOJSON
+            ============================================= */
+
+
+            if (
+
+                data.type ===
+                "FeatureCollection"
+
+                ||
+
+                data.type ===
+                "Feature"
+
+            ) {
+
+
+                newLayer = L.geoJSON(
+
+                    data,
+
+                    {
+
+                        style: bathymetryStyle,
+
+
+                        pointToLayer:
+                            function(
+                                feature,
+                                latlng
+                            ) {
+
+
+                                return L.circleMarker(
+
+                                    latlng,
+
+                                    Object.assign({ radius: 7 }, bathymetryStyle(feature))
+
+                                );
+
+                            },
+
+
+                        onEachFeature:
+                            function(
+                                feature,
+                                layer
+                            ) {
+
+
+                                createPopup(
+
+                                    feature.properties,
+
+                                    layer
+
+                                );
+
+                            }
+
+                    }
+
+                );
+
+            }
+
+
+            /* =============================================
+               ARCGIS JSON
+            ============================================= */
+
+
+            else if (
+
+                data.features
+
+                &&
+
+                Array.isArray(
+                    data.features
+                )
+
+            ) {
+
+
+                newLayer =
+                    convertArcGISJSON(
+                        data
+                    );
+
+            }
+
+
+            else {
+
+
+                alert(
+
+                    "Format data tidak dikenali.\n\n" +
+
+                    "Gunakan GeoJSON atau ArcGIS JSON."
+
+                );
+
+
+                return;
+
+            }
+
+
+            /*
+             * Masukkan ke peta
+             */
+
+            newLayer.addTo(map);
+
+
+            /*
+             * ID layer
+             */
+
+            layerCounter++;
+
+
+            const layerObject = {
+
+                id:
+                    layerCounter,
+
+                name:
+                    fileName,
+
+                layer:
+                    newLayer
+
+            };
+
+
+            layers.push(
+                layerObject
+            );
+
+
+            /*
+             * Update daftar layer
+             */
+
+            updateLayerList();
+
+
+            /*
+             * Zoom ke data
+             */
+
+            if (
+
+                newLayer.getBounds
+
+                &&
+
+                newLayer
+                    .getBounds()
+                    .isValid()
+
+            ) {
+
+
+                map.fitBounds(
+
+                    newLayer.getBounds(),
+
+                    {
+
+                        padding:
+                            [50, 50]
+
+                    }
+
+                );
+
+            }
+
+
+            if (showMessage) {
+                setMapStatus("Layer tambahan berhasil dimuat: " + fileName, false);
+            }
+
         }
 
-        const converted = window.Terraformer.arcgisToGeoJSON({
-          ...feature,
-          attributes: feature.attributes || {},
-          geometry: {
-            ...feature.geometry,
-            ...(reference ? { spatialReference: reference } : {})
-          }
-        });
 
-        if (!converted || converted.type !== "Feature") {
-          throw new Error("Konversi fitur Esri JSON gagal.");
+        /* =================================================
+           14. KONVERSI ARCGIS JSON
+        ================================================= */
+
+
+        function convertArcGISJSON(data) {
+
+
+            const group =
+                L.featureGroup();
+
+
+            data.features.forEach(
+
+                function(feature) {
+
+
+                    const geometry =
+                        feature.geometry;
+
+
+                    const attributes =
+                        feature.attributes || {};
+
+
+                    if (!geometry) {
+
+                        return;
+
+                    }
+
+
+                    /* =====================================
+                       POINT
+                    ===================================== */
+
+
+                    if (
+
+                        geometry.x !== undefined
+
+                        &&
+
+                        geometry.y !== undefined
+
+                    ) {
+
+
+                        const marker =
+                            L.circleMarker(
+
+                                [
+
+                                    geometry.y,
+
+                                    geometry.x
+
+                                ],
+
+                                {
+
+                                    radius:
+                                        7,
+
+                                    color:
+                                        "#d7191c",
+
+                                    fillColor:
+                                        "#ff5a5f",
+
+                                    fillOpacity:
+                                        0.9,
+
+                                    weight:
+                                        2
+
+                                }
+
+                            );
+
+
+                        createPopup(
+
+                            attributes,
+
+                            marker
+
+                        );
+
+
+                        marker.addTo(
+                            group
+                        );
+
+                    }
+
+
+                    /* =====================================
+                       POLYLINE
+                    ===================================== */
+
+
+                    else if (
+                        geometry.paths
+                    ) {
+
+
+                        geometry.paths.forEach(
+
+                            function(path) {
+
+
+                                const latlngs =
+                                    path.map(
+
+                                        function(coord) {
+
+
+                                            return [
+
+                                                coord[1],
+
+                                                coord[0]
+
+                                            ];
+
+                                        }
+
+                                    );
+
+
+                                const line =
+                                    L.polyline(
+
+                                        latlngs,
+
+                                        {
+
+                                            color:
+                                                "#d7191c",
+
+                                            weight:
+                                                4
+
+                                        }
+
+                                    );
+
+
+                                createPopup(
+
+                                    attributes,
+
+                                    line
+
+                                );
+
+
+                                line.addTo(
+                                    group
+                                );
+
+                            }
+
+                        );
+
+                    }
+
+
+                    /* =====================================
+                       POLYGON
+                    ===================================== */
+
+
+                    else if (
+                        geometry.rings
+                    ) {
+
+
+                        const rings =
+                            geometry.rings.map(
+
+                                function(ring) {
+
+
+                                    return ring.map(
+
+                                        function(coord) {
+
+
+                                            return [
+
+                                                coord[1],
+
+                                                coord[0]
+
+                                            ];
+
+                                        }
+
+                                    );
+
+                                }
+
+                            );
+
+
+                        const polygon =
+                            L.polygon(
+
+                                rings,
+
+                                {
+
+                                    color:
+                                        "#d7191c",
+
+                                    weight:
+                                        2,
+
+                                    fillColor:
+                                        "#ff7b7b",
+
+                                    fillOpacity:
+                                        0.35
+
+                                }
+
+                            );
+
+
+                        createPopup(
+
+                            attributes,
+
+                            polygon
+
+                        );
+
+
+                        polygon.addTo(
+                            group
+                        );
+
+                    }
+
+                }
+
+            );
+
+
+            return group;
+
         }
 
-        return converted;
-      });
 
-      return {
-        type: "FeatureCollection",
-        features: features
-      };
-    }
+        /* =================================================
+           15. POPUP ATRIBUT
+        ================================================= */
 
-    function checkGeometry(geometry) {
-      if (geometry === null) return;
 
-      if (!geometry || typeof geometry !== "object") {
-        throw new Error("Geometri fitur tidak valid.");
-      }
-
-      if (geometry.type === "GeometryCollection") {
-        if (!Array.isArray(geometry.geometries)) {
-          throw new Error("GeometryCollection tidak valid.");
-        }
-
-        geometry.geometries.forEach(checkGeometry);
-        return;
-      }
-
-      const depths = {
-        Point: 0,
-        MultiPoint: 1,
-        LineString: 1,
-        MultiLineString: 2,
-        Polygon: 2,
-        MultiPolygon: 3
-      };
-
-      if (!Object.prototype.hasOwnProperty.call(depths, geometry.type)) {
-        throw new Error("Jenis geometri tidak dikenali: " + geometry.type);
-      }
-
-      function visit(coordinates, depth) {
-        if (!Array.isArray(coordinates)) {
-          throw new Error("Struktur koordinat tidak valid.");
-        }
-
-        if (depth > 0) {
-          coordinates.forEach(function (part) {
-            visit(part, depth - 1);
-          });
-          return;
-        }
-
-        const longitude = coordinates[0];
-        const latitude = coordinates[1];
-
-        if (
-          coordinates.length < 2 ||
-          !Number.isFinite(longitude) ||
-          !Number.isFinite(latitude) ||
-          Math.abs(longitude) > 180 ||
-          Math.abs(latitude) > 90
+        function createPopup(
+            properties,
+            layer
         ) {
-          throw new Error(
-            "Koordinat bukan bujur/lintang yang valid. " +
-            "Ekspor data dalam WGS 84 (EPSG:4326)."
-          );
-        }
-      }
 
-      visit(geometry.coordinates, depths[geometry.type]);
-    }
 
-    function validateData(data) {
-      function checkFeature(feature) {
-        if (!feature || feature.type !== "Feature") {
-          throw new Error("Struktur Feature tidak valid.");
-        }
+            if (!properties) {
 
-        checkGeometry(feature.geometry);
-      }
+                return;
 
-      if (data.type === "FeatureCollection") {
-        if (!Array.isArray(data.features)) {
-          throw new Error("Daftar features tidak valid.");
-        }
-
-        data.features.forEach(checkFeature);
-      } else if (data.type === "Feature") {
-        checkFeature(data);
-      } else {
-        checkGeometry(data);
-      }
-    }
-
-    function makePopup(feature, layer, title) {
-      const popup = document.createElement("div");
-
-      const heading = document.createElement("div");
-      heading.className = "popup-title";
-      heading.textContent = title;
-      popup.appendChild(heading);
-
-      const entries = Object.entries(feature.properties || {});
-
-      if (!entries.length) {
-        const row = document.createElement("div");
-        row.textContent = "Objek ini tidak memiliki atribut.";
-        popup.appendChild(row);
-      }
-
-      entries.forEach(function ([key, value]) {
-        const row = document.createElement("div");
-
-        row.textContent =
-          key + ": " +
-          (value === null ? "-" :
-            typeof value === "object"
-              ? JSON.stringify(value)
-              : String(value));
-
-        popup.appendChild(row);
-      });
-
-      layer.bindPopup(popup);
-    }
-
-    function addData(text, key, title) {
-      const cleanedText = text.replace(/^\uFEFF/, "");
-      const data = normalizeData(JSON.parse(cleanedText));
-
-      validateData(data);
-
-      const previous = records.get(key);
-
-      const record = {
-        key: key,
-        title: title,
-        opacity: previous ? previous.opacity : 0.85,
-        layer: null
-      };
-
-      const nextLayer = L.geoJSON(data, {
-        style: function (feature) {
-          return featureStyle(feature, record.opacity);
-        },
-
-        pointToLayer: function (feature, latlng) {
-          return L.circleMarker(latlng, {
-            ...featureStyle(feature, record.opacity),
-            radius: 6,
-            weight: 1
-          });
-        },
-
-        onEachFeature: function (feature, layer) {
-          makePopup(feature, layer, title);
-
-          layer.on("mouseover", function () {
-            if (record.opacity > 0 && typeof layer.setStyle === "function") {
-              layer.setStyle({
-                color: "#ffffff",
-                weight: 2
-              });
             }
-          });
 
-          layer.on("mouseout", function () {
-            if (typeof layer.setStyle === "function") {
-              layer.setStyle(featureStyle(feature, record.opacity));
+
+            let html =
+
+                '<div class="popup-title">' +
+
+                'Informasi Atribut' +
+
+                '</div>';
+
+
+            const keys =
+                Object.keys(
+                    properties
+                );
+
+
+            if (
+                keys.length === 0
+            ) {
+
+
+                html +=
+
+                    '<div class="popup-row">' +
+
+                    'Tidak ada atribut.' +
+
+                    '</div>';
+
             }
-          });
+
+
+            keys.forEach(
+
+                function(key) {
+
+
+                    let value =
+                        properties[key];
+
+
+                    if (
+
+                        value === null
+
+                        ||
+
+                        value === undefined
+
+                    ) {
+
+                        value =
+                            "-";
+
+                    }
+
+
+                    html +=
+
+                        '<div class="popup-row">' +
+
+                        '<b>' +
+
+                        key +
+
+                        '</b>: ' +
+
+                        value +
+
+                        '</div>';
+
+                }
+
+            );
+
+
+            layer.bindPopup(
+                html
+            );
+
         }
-      });
 
-      const bounds = nextLayer.getBounds();
 
-      if (!bounds.isValid()) {
-        throw new Error(
-          "File tidak memiliki geometri yang bisa ditampilkan."
+        /* =================================================
+           16. UPDATE DAFTAR LAYER
+        ================================================= */
+
+
+        function updateLayerList() {
+
+
+            const container =
+                document.getElementById(
+                    "layerList"
+                );
+
+
+            container.innerHTML = "";
+
+
+            if (
+                layers.length === 0
+            ) {
+
+
+                container.innerHTML =
+
+                    '<div style="' +
+
+                    'font-size:12px;' +
+
+                    'color:#888;' +
+
+                    '">' +
+
+                    'Belum ada data.' +
+
+                    '</div>';
+
+                return;
+
+            }
+
+
+            layers.forEach(
+
+                function(item) {
+
+
+                    const div =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    div.className =
+                        "layer-item";
+
+
+                    div.innerHTML =
+
+                        '<div class="layer-name" ' +
+
+                        'title="' +
+                        item.name +
+                        '">' +
+
+                        '🗺️ ' +
+                        item.name +
+
+                        '</div>' +
+
+                        '<div class="layer-actions">' +
+
+                        '<button ' +
+
+                        'onclick="toggleLayer(' +
+                        item.id +
+                        ')" ' +
+
+                        'title="Tampilkan/Sembunyikan">' +
+
+                        '👁️' +
+
+                        '</button>' +
+
+                        '<button ' +
+
+                        'onclick="zoomLayer(' +
+                        item.id +
+                        ')" ' +
+
+                        'title="Zoom ke layer">' +
+
+                        '🔍' +
+
+                        '</button>' +
+
+                        '<button ' +
+
+                        'onclick="removeLayer(' +
+                        item.id +
+                        ')" ' +
+
+                        'title="Hapus layer">' +
+
+                        '🗑️' +
+
+                        '</button>' +
+
+                        '</div>';
+
+
+                    container.appendChild(
+                        div
+                    );
+
+                }
+
+            );
+
+        }
+
+
+        /* =================================================
+           17. TOGGLE LAYER
+        ================================================= */
+
+
+        function toggleLayer(id) {
+
+
+            const item =
+                layers.find(
+
+                    function(layer) {
+
+                        return layer.id === id;
+
+                    }
+
+                );
+
+
+            if (!item) {
+
+                return;
+
+            }
+
+
+            if (
+                map.hasLayer(
+                    item.layer
+                )
+            ) {
+
+
+                map.removeLayer(
+                    item.layer
+                );
+
+            }
+
+            else {
+
+
+                item.layer.addTo(
+                    map
+                );
+
+            }
+
+        }
+
+
+        /* =================================================
+           18. ZOOM LAYER
+        ================================================= */
+
+
+        function zoomLayer(id) {
+
+
+            const item =
+                layers.find(
+
+                    function(layer) {
+
+                        return layer.id === id;
+
+                    }
+
+                );
+
+
+            if (!item) {
+
+                return;
+
+            }
+
+
+            if (
+                item.layer.getBounds
+                &&
+                item.layer
+                    .getBounds()
+                    .isValid()
+            ) {
+
+
+                map.fitBounds(
+
+                    item.layer.getBounds(),
+
+                    {
+
+                        padding:
+                            [50, 50]
+
+                    }
+
+                );
+
+            }
+
+        }
+
+
+        /* =================================================
+           19. HAPUS LAYER
+        ================================================= */
+
+
+        function removeLayer(id) {
+
+
+            const index =
+                layers.findIndex(
+
+                    function(layer) {
+
+                        return layer.id === id;
+
+                    }
+
+                );
+
+
+            if (
+                index === -1
+            ) {
+
+                return;
+
+            }
+
+
+            map.removeLayer(
+
+                layers[index].layer
+
+            );
+
+
+            layers.splice(
+                index,
+                1
+            );
+
+
+            updateLayerList();
+
+        }
+
+
+        /* =================================================
+           20. BERANDA
+        ================================================= */
+
+
+        function goHome() {
+
+
+            closeLayerPanel();
+
+
+            document
+                .getElementById(
+                    "welcomeBox"
+                )
+                .style.display =
+                "block";
+
+
+            zoomToAllLayers();
+
+        }
+
+
+        /* =================================================
+           21. PETA
+        ================================================= */
+
+
+        function goMap() {
+
+
+            closeLayerPanel();
+
+
+            document
+                .getElementById(
+                    "welcomeBox"
+                )
+                .style.display =
+                "none";
+
+
+            zoomToAllLayers();
+
+        }
+
+
+        /* =================================================
+           22. API
+        ================================================= */
+
+
+        function showAPI() {
+
+
+            alert(
+
+                "WebGIS Kelompok 16 — Kemah Kerja Geomatika 2026\n\n" +
+
+                "API endpoint dapat dikembangkan " +
+
+                "pada tahap berikutnya."
+
+            );
+
+        }
+
+
+        /* =================================================
+           23. TOMBOL ESC
+        ================================================= */
+
+
+        document.addEventListener(
+
+            "keydown",
+
+            function(event) {
+
+
+                if (
+                    event.key === "Escape"
+                ) {
+
+                    closeLayerPanel();
+
+                }
+
+            }
+
         );
-      }
 
-      const shouldShow =
-        previous ? map.hasLayer(previous.layer) : true;
-
-      if (previous) {
-        map.removeLayer(previous.layer);
-      }
-
-      record.layer = nextLayer;
-      records.set(key, record);
-
-      if (shouldShow) {
-        nextLayer.addTo(map);
-      }
-
-      renderLayerList();
-    }
-
-    function renderLayerList() {
-      layerListEl.replaceChildren();
-      layerCountEl.textContent = String(records.size);
-
-      if (!records.size) {
-        const empty = document.createElement("p");
-        empty.className = "help";
-        empty.textContent = "Belum ada layer yang berhasil dimuat.";
-        layerListEl.appendChild(empty);
-        return;
-      }
-
-      records.forEach(function (record) {
-        const card = document.createElement("div");
-        card.className = "layer-card";
-
-        const top = document.createElement("div");
-        top.className = "layer-top";
-
-        const label = document.createElement("label");
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = map.hasLayer(record.layer);
-
-        const name = document.createElement("span");
-        name.textContent = record.title;
-
-        label.append(checkbox, name);
-
-        const focus = document.createElement("button");
-        focus.type = "button";
-        focus.className = "focus-button";
-        focus.textContent = "Fokus";
-        focus.setAttribute("aria-label", "Fokus ke " + record.title);
-
-        top.append(label, focus);
-
-        checkbox.addEventListener("change", function () {
-          if (checkbox.checked) {
-            record.layer.addTo(map);
-          } else {
-            map.removeLayer(record.layer);
-          }
-        });
-
-        focus.addEventListener("click", function () {
-          if (!map.hasLayer(record.layer)) {
-            record.layer.addTo(map);
-            checkbox.checked = true;
-          }
-
-          map.fitBounds(record.layer.getBounds(), {
-            padding: [25, 25],
-            maxZoom: 17
-          });
-
-          closeMobilePanel();
-        });
-
-        const opacityLabel = document.createElement("label");
-        opacityLabel.className = "opacity-label";
-
-        const sliderId = "opacity-" + layerListEl.children.length;
-
-        opacityLabel.htmlFor = sliderId;
-
-        const opacityText = document.createElement("span");
-        opacityText.textContent = "Opasitas";
-
-        const opacityValue = document.createElement("span");
-        opacityValue.textContent =
-          Math.round(record.opacity * 100) + "%";
-
-        opacityLabel.append(opacityText, opacityValue);
-
-        const slider = document.createElement("input");
-        slider.id = sliderId;
-        slider.type = "range";
-        slider.min = "0";
-        slider.max = "100";
-        slider.step = "1";
-        slider.value = String(Math.round(record.opacity * 100));
-        slider.setAttribute("aria-label", "Opasitas " + record.title);
-
-        slider.addEventListener("input", function () {
-          record.opacity = Number(slider.value) / 100;
-          opacityValue.textContent = slider.value + "%";
-
-          record.layer.setStyle(function (feature) {
-            return featureStyle(feature, record.opacity);
-          });
-        });
-
-        card.append(top, opacityLabel, slider);
-        layerListEl.appendChild(card);
-      });
-    }
-
-    function zoomAll() {
-      const bounds = L.latLngBounds([]);
-
-      records.forEach(function (record) {
-        bounds.extend(record.layer.getBounds());
-      });
-
-      if (bounds.isValid()) {
-        map.fitBounds(bounds, {
-          padding: [30, 30],
-          maxZoom: 17
-        });
-      }
-    }
-
-    document.getElementById("zoom-all")
-      .addEventListener("click", function () {
-        zoomAll();
-        closeMobilePanel();
-      });
-
-    const legend = L.control({
-      position: "bottomright"
-    });
-
-    legend.onAdd = function () {
-      const container = L.DomUtil.create("div", "legend");
-
-      const details = document.createElement("details");
-      details.open = window.innerWidth > 760;
-
-      const summary = document.createElement("summary");
-      summary.textContent = "Keterangan · Wilayah bawah";
-      details.appendChild(summary);
-
-      for (let classNumber = 1; classNumber <= 7; classNumber++) {
-        const row = document.createElement("div");
-        row.className = "legend-row";
-
-        const swatch = document.createElement("span");
-        swatch.className = "swatch";
-        swatch.style.backgroundColor = colors[classNumber];
-
-        const label = document.createElement("span");
-        label.textContent = classLabels[classNumber];
-
-        row.append(swatch, label);
-        details.appendChild(row);
-      }
-
-      const note = document.createElement("p");
-      note.textContent =
-        "Rentang nilai berlaku untuk wilayah bawah. " +
-        "Wilayah atas menggunakan warna kode kelas 1–7; " +
-        "rentang nilainya perlu mengikuti klasifikasi data atas.";
-
-      details.appendChild(note);
-      container.appendChild(details);
-
-      L.DomEvent.disableClickPropagation(container);
-      L.DomEvent.disableScrollPropagation(container);
-
-      return container;
-    };
-
-    legend.addTo(map);
-
-    function reportResults(errors) {
-      renderLayerList();
-      zoomAll();
-
-      let message =
-        records.size + " layer tersedia. " +
-        "Klik objek untuk melihat atributnya.";
-
-      if (errors.length) {
-        message += "\n\nGagal memuat:\n" + errors.join("\n");
-      }
-
-      setStatus(message, errors.length > 0);
-    }
-
-    async function loadPublicData() {
-      const errors = [];
-
-      for (const item of publicFiles) {
-        setStatus("Sedang memuat " + item.title + "...");
-
-        try {
-          const response = await fetch(item.url);
-
-          if (!response.ok) {
-            throw new Error(
-              "HTTP " + response.status +
-              ". Pastikan file ada dan namanya sama persis."
-            );
-          }
-
-          const text = await response.text();
-          addData(text, item.key, item.title);
-        } catch (error) {
-          errors.push(item.key + ": " + error.message);
-          console.error("Gagal memuat " + item.key, error);
-        }
-      }
-
-      reportResults(errors);
-    }
-
-    fileInput.addEventListener("change", function (event) {
-      const files = Array.from(event.target.files || []);
-
-      // Memungkinkan file yang sama dipilih kembali.
-      fileInput.value = "";
-
-      if (!files.length) return;
-
-      loadQueue = loadQueue.then(async function () {
-        const errors = [];
-
-        for (const file of files) {
-          setStatus("Sedang membaca " + file.name + "...");
-
-          try {
-            const knownFile = publicFiles.find(
-              (item) => item.key === file.name
-            );
-
-            const title =
-              records.get(file.name)?.title ||
-              knownFile?.title ||
-              file.name;
-
-            addData(await file.text(), file.name, title);
-          } catch (error) {
-            errors.push(file.name + ": " + error.message);
-            console.error("Gagal membaca " + file.name, error);
-          }
+        function zoomToAllLayers() {
+            if (!layers.length) {
+                map.setView([-5.55, 105.26], 13);
+                return;
+            }
+            const bounds = L.latLngBounds([]);
+            layers.forEach(function(item) {
+                if (item.layer.getBounds && item.layer.getBounds().isValid()) {
+                    bounds.extend(item.layer.getBounds());
+                }
+            });
+            if (bounds.isValid()) map.fitBounds(bounds, { padding: [45, 45], maxZoom: 17 });
         }
 
-        reportResults(errors);
-        closeMobilePanel();
-      }).catch(function (error) {
-        setStatus("Terjadi kesalahan: " + error.message, true);
-        console.error(error);
-      });
-    });
+        async function loadDefaultBathymetry() {
+            if (window.location.protocol === "file:") {
+                setMapStatus("Pemuatan otomatis memerlukan Live Server atau GitHub Pages. Jangan membuka index.html dengan klik dua kali.", true);
+                return;
+            }
 
-    loadQueue = loadPublicData().catch(function (error) {
-      setStatus("Gagal memuat peta: " + error.message, true);
-      console.error(error);
-    });
-  </script>
+            setMapStatus("Sedang memuat dua layer batimetri...", false);
+            const errors = [];
+
+            for (const item of DEFAULT_FILES) {
+                try {
+                    const url = new URL(item.url, document.baseURI);
+                    const response = await fetch(url.href, { cache: "no-store" });
+                    if (!response.ok) throw new Error("HTTP " + response.status);
+                    const text = (await response.text()).replace(/^\uFEFF/, "");
+                    const data = normalizeSpatialData(JSON.parse(text));
+                    addSpatialData(data, item.name, false);
+                } catch (error) {
+                    errors.push(item.url + " (" + error.message + ")");
+                    console.error("Gagal memuat " + item.url, error);
+                }
+            }
+
+            zoomToAllLayers();
+            if (errors.length) {
+                setMapStatus("Sebagian data gagal dimuat: " + errors.join("; ") + ". Pastikan nama file dan lokasinya benar.", true);
+            } else {
+                setMapStatus("Dua layer batimetri berhasil dimuat otomatis. Klik poligon untuk melihat atribut.", false);
+            }
+        }
+
+        buildLegend();
+        loadDefaultBathymetry();
+
+
+    </script>
+
 </body>
+
 </html>
